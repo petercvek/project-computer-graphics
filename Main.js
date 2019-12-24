@@ -1,4 +1,4 @@
-import Application from "../../common/Application.js";
+import Application from "./common/Application.js";
 import * as WebGL from "./WebGL.js";
 
 import Node from "./Node.js";
@@ -6,12 +6,16 @@ import Node from "./Node.js";
 import shaders from "./shaders.js";
 import * as CubeModel from "./cube.js";
 
+import GLTFLoader from "./GLTFLoader.js";
+import Renderer from "./Renderer.js";
+
 const mat4 = glMatrix.mat4;
 
-let pozicijaX = 0; // min 0
-let pozicijaY = 0; // max 10, 5 sredina
+let pozicijaX = 1; // min 0
+let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
+let smerFigure = 3.14159265;
 
 function round(value, decimals) {
   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
@@ -23,22 +27,78 @@ function premik(smer, usmerjenost) {
     if (time < 50) {
       if (smer === "x") {
         if (usmerjenost === "+") {
-          pozicijaX = round(pozicijaX + 0.02, 3);
+          pozicijaX = round(pozicijaX + 0.01, 3);
         } else {
-          pozicijaX = round(pozicijaX - 0.02, 3);
+          pozicijaX = round(pozicijaX - 0.01, 3);
         }
       } else {
         if (usmerjenost === "+") {
-          pozicijaY = round(pozicijaY + 0.02, 3);
+          pozicijaY = round(pozicijaY + 0.01, 3);
         } else {
-          pozicijaY = round(pozicijaY - 0.02, 3);
+          pozicijaY = round(pozicijaY - 0.01, 3);
         }
       }
       if (time > 24) {
-        pozicijaZ = round(pozicijaZ - 0.03, 3);
+        pozicijaZ = round(pozicijaZ - 0.02, 3);
       } else {
-        pozicijaZ = round(pozicijaZ + 0.03, 3);
+        pozicijaZ = round(pozicijaZ + 0.02, 3);
       }
+      time++;
+    } else {
+      clearInterval(interval);
+      premikam = false;
+    }
+  }, 2);
+}
+
+// function zavrti(usmerjenost) {
+//   let smer = Math.abs(smerFigure % 6.283);
+//   console.log("Smer:", smer);
+
+//   let razlika = Math.abs(smer - usmerjenost);
+//   // console.log(razlika);
+
+//   if (razlika < 0.5) {
+//     return;
+//   }
+//   if (razlika > 4.5) {
+//     zavrtiZa(-1.57079);
+//     return;
+//   }
+//   if (razlika > 3) {
+//     zavrtiZa(3.14159265);
+//     return;
+//   }
+//   if (razlika > 1) {
+//     zavrtiZa(1.57079);
+//     return;
+//   }
+// }
+
+function zavrti(usmerjenost) {
+  let time = 0;
+  let smer = Math.abs(smerFigure % 6.283);
+  let razlika = Math.abs(smer - usmerjenost);
+  let majhenKot = razlika / 50;
+
+  let interval = setInterval(function() {
+    if (time < 50) {
+      smerFigure = round(smerFigure + majhenKot, 7);
+      time++;
+    } else {
+      clearInterval(interval);
+      premikam = false;
+    }
+  }, 2);
+}
+
+function zavrtiZa(kot) {
+  let time = 0;
+  let majhenKot = kot / 50;
+
+  let interval = setInterval(function() {
+    if (time < 50) {
+      smerFigure = round(smerFigure + majhenKot, 7);
       time++;
     } else {
       clearInterval(interval);
@@ -54,16 +114,27 @@ const keydownHandler = e => {
     premikam = true;
     if (e.code === "KeyW") {
       premik("x", "+");
+      zavrti(3.14159265);
+      // smerFigure = 3.14159265;
     } else if (e.code === "KeyS") {
       premik("x", "-");
+      zavrti(0);
+      // smerFigure = 0;
     } else if (e.code === "KeyD") {
       premik("y", "+");
+      if (Math.abs(smerFigure % 6.283) > 3.14) {
+        zavrti(4.71238265);
+      } else {
+        zavrti(-1.57079);
+      }
+      // smerFigure = -1.57079;
     } else if (e.code === "KeyA") {
       premik("y", "-");
+      zavrti(1.57079);
+      // smerFigure = 1.57079;
     }
   }
-  //   console.log(e);
-  console.log("X: " + pozicijaX, "Y: " + pozicijaY);
+  // console.log("X: " + pozicijaX, "Y: " + pozicijaY);
 };
 const keyupHandler = e => {
   //   console.log(e);
@@ -74,13 +145,13 @@ document.addEventListener("keydown", keydownHandler);
 document.addEventListener("keyup", keyupHandler);
 
 class App extends Application {
+  nastaviKamero = true;
   initGL() {
     const gl = this.gl;
 
     gl.clearColor(1, 1, 1, 1);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-
     this.programs = WebGL.buildPrograms(gl, shaders);
   }
 
@@ -88,130 +159,133 @@ class App extends Application {
     const gl = this.gl;
 
     this.initGL();
+    this.renderer = new Renderer(this.gl);
 
     // We need a root node to add all other nodes to it.
     this.root = new Node();
 
     // The camera holds a projection transformation, and its global
     // transformation is used as the inverse view transformation.
-    this.camera = new Node();
-    this.camera.projection = mat4.create();
-    this.root.addChild(this.camera);
+    // this.camera = new Node();
+    // this.camera.projection = mat4.create();
+    // this.root.addChild(this.camera);
 
-    // Load the model. Here we just hardcoded the model as a javascript
-    // module, but usually the resources would be requested asynchronously
-    // during the loading screen.
-    const cubeModel = this.createModel(CubeModel);
+    // Dodaj modele
 
-    // A default texture is needed before the actual texture is fetched
-    // from the server.
-    const defaultTexture = WebGL.createTexture(gl, {
-      data: new Uint8Array([255, 255, 255, 255]),
-      width: 1,
-      height: 1
-    });
+    this.loader = new GLTFLoader(this.gl);
+    // Load GLTF
+    this.loader.load("modeli/pingvin/pingvin2.gltf");
 
-    // Create three cubes, two attached to the root node and one
-    // attached to another cube. Set the correct models and textures.
-    this.cube1 = new Node();
-    this.cube1.model = cubeModel;
-    this.cube1.texture = defaultTexture;
-    this.root.addChild(this.cube1);
+    this.pingvin = new Node();
+    this.pingvin.model = this.loader;
+    this.root.addChild(this.pingvin);
 
-    this.cube2 = new Node();
-    this.cube2.model = cubeModel;
-    this.cube2.texture = defaultTexture;
-    this.root.addChild(this.cube2);
+    this.loader2 = new GLTFLoader(this.gl);
+    this.loader2.load("modeli/pingvin/pingvin2.gltf");
+    this.pingvin2 = new Node();
+    this.pingvin2.model = this.loader2;
+    this.root.addChild(this.pingvin2);
 
-    this.cube3 = new Node();
-    this.cube3.model = cubeModel;
-    this.cube3.texture = defaultTexture;
-    this.cube2.addChild(this.cube3);
+    this.loader3 = new GLTFLoader(this.gl);
+    this.loader3.load("modeli/pingvin/pingvin2.gltf");
+    this.pingvin3 = new Node();
+    this.pingvin3.model = this.loader3;
+    this.root.addChild(this.pingvin3);
 
-    let t4 = this.camera.transform;
-    mat4.fromTranslation(t4, [15, 7, 0]);
-    mat4.rotateY(t4, t4, 0.4);
-    mat4.rotateX(t4, t4, -0.7853);
+    // premikanje kamere
+    // let t4 = this.camera.transform;
+    // mat4.fromTranslation(t4, [15, 7, 0]);
+    // mat4.rotateY(t4, t4, 0.4);
+    // mat4.rotateX(t4, t4, -0.7853);
 
     // Set two variables for controlling the cubes' rotations from GUI.
     this.leftRotation = 0;
     this.rightRotation = 0;
     this.forward = 0;
-
-    // Finally, send a request for a texture and attach the texture to
-    // all three cubes when the response arrives. This example shows how
-    // to handle resource loading asynchronously.
-    this.loadTexture(
-      "../../common/images/crate-diffuse.png",
-      {
-        mip: true,
-        min: gl.NEAREST_MIPMAP_NEAREST,
-        mag: gl.NEAREST
-      },
-      texture => {
-        this.cube1.texture = texture;
-        this.cube2.texture = texture;
-        this.cube3.texture = texture;
-      }
-    );
   }
 
   update() {
-    let t1 = this.cube1.transform;
-    mat4.fromTranslation(t1, [2 * pozicijaY, pozicijaZ, -2 * pozicijaX]);
-    mat4.rotateX(t1, t1, this.leftRotation);
+    // PREMIKANJE IN ROTIRANJE
+    // mat4.fromTranslation(t1, [2 * pozicijaY, pozicijaZ, -2 * pozicijaX]);
+    // mat4.rotateX(t1, t1, this.leftRotation);
+    if (this.pingvin.model.gltf) {
+      let s1 = this.pingvin.model.gltf;
+      // console.log(s1.nodes[2].transform);
+      if (s1.nodes[2].transform) {
+        let t2 = s1.nodes[2].transform;
+        mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 1, -2 * pozicijaX]);
+        mat4.rotateX(t2, t2, 1.570796);
+        mat4.rotateZ(t2, t2, smerFigure);
+      }
+    }
 
-    let t2 = this.cube2.transform;
-    mat4.fromTranslation(t2, [2 * pozicijaY + 20, pozicijaZ, -2 * pozicijaX]);
-    mat4.rotateX(t2, t2, this.rightRotation);
+    if (this.pingvin2.model.gltf) {
+      let s2 = this.pingvin2.model.gltf;
+      // console.log(s1.nodes[2].transform);
+      if (s2.nodes[2].transform) {
+        let t3 = s2.nodes[2].transform;
+        mat4.fromTranslation(t3, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
+        mat4.rotateX(t3, t3, 1.570796);
+        // mat4.rotateZ(t3, t3, smerFigure);
+      }
+    }
 
-    // let t3 = this.cube3.transform;
-    // mat4.fromTranslation(t3, [-2, 0, -4]);
-    // mat4.rotateY(t3, t3, 0);
+    if (this.pingvin3.model.gltf) {
+      let s3 = this.pingvin3.model.gltf;
+      // console.log(s1.nodes[2].transform);
+      if (s3.nodes[2].transform) {
+        let t4 = s3.nodes[2].transform;
+        mat4.fromTranslation(t4, [2 * pozicijaY, pozicijaZ, -2 * pozicijaX + 1]);
+        mat4.rotateX(t4, t4, 1.570796);
+        // mat4.rotateZ(t3, t3, smerFigure);
+      }
+    }
+
+    // if (this.pingvin2.model.gltf) {
+    //   let s2 = this.pingvin2.model.gltf;
+    //   // console.log(s1.nodes[2].transform);
+    //   if (s2.nodes[2].transform) {
+    //     let t3 = s2.nodes[2].transform;
+    //     mat4.fromTranslation(t3, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
+    //     mat4.rotateX(t3, t3, 1.570796);
+    //     mat4.rotateZ(t3, t3, 3.14159265);
+    //   }
+    // }
   }
 
   render() {
-    const gl = this.gl;
+    if (!this.loader.built || !this.loader2.built || !this.loader3.built) {
+      return;
+    }
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    if (this.nastaviKamero == true) {
+      const camera = this.loader.getObjectByName("Camera");
+      // console.log(camera.transform);
+      let t4 = camera.transform;
+      mat4.rotateY(t4, t4, -0.3);
+      mat4.rotateZ(t4, t4, -0.3);
+      // mat4.fromTranslation(t4, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
+      this.nastaviKamero = false;
+    }
+    const camera = this.loader.getObjectByName("Camera");
+    let scene = this.loader.getObjectByName("Scene");
+    let scene2 = this.loader2.getObjectByName("Scene");
+    let scene3 = this.loader3.getObjectByName("Scene");
+    // treba naloudati vse in jih zdruzit vse v eno sceno
+    let vseScene = { name: "Scene", nodes: scene.nodes.concat(scene2.nodes).concat(scene3.nodes) };
+    console.log(vseScene);
 
-    const program = this.programs.simple;
-    gl.useProgram(program.program);
+    // console.log(camera.transform);
+    // let t4 = camera.transform;
+    // mat4.fromYRotation(t4, t4, this.leftRotation);
+    // mat4.fromXRotation(t4, t4, -0.7853);
 
-    // In this simple example, only one program is used and only one
-    // texture uniform is present. We can set it to use the correct
-    // texture mapping unit in advance.
-    gl.activeTexture(gl.TEXTURE0);
-    gl.uniform1i(program.uniforms.uTexture, 0);
+    if (!scene || !camera) {
+      throw new Error("Scene or camera not present in glTF");
+    }
 
-    // Create a MVP matrix and a stack to hold the intermediate matrices.
-    let mvpMatrix = mat4.create();
-    let mvpStack = [];
-    const mvpLocation = program.uniforms.uModelViewProjection;
-    // We can premultiply the view and projection matrices, so that we
-    // do not have to do it for every node during scene traversal.
-    const viewMatrix = this.camera.getGlobalTransform();
-    mat4.invert(viewMatrix, viewMatrix);
-    mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
-
-    // Traverse the scene. Before any modification, the MVP matrix has to
-    // be pushed onto the stack and then restored once the node is done
-    // rendering itself and its children.
-    this.root.traverse(
-      node => {
-        mvpStack.push(mat4.clone(mvpMatrix));
-        mat4.mul(mvpMatrix, mvpMatrix, node.transform);
-        if (node.model) {
-          gl.bindVertexArray(node.model.vao);
-          gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix);
-          gl.bindTexture(gl.TEXTURE_2D, node.texture);
-          gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
-        }
-      },
-      node => {
-        mvpMatrix = mvpStack.pop();
-      }
-    );
+    this.renderer.render(vseScene, camera);
+    // this.renderer.render(scene2, camera);
   }
 
   resize() {
@@ -225,43 +299,8 @@ class App extends Application {
     const near = 0.1;
     const far = 100;
     // naredi da je ortografsko, perpendiclar, da je pravokotno, pod kotom 45 stopinj to potem lihk rata isometricno
-    mat4.ortho(this.camera.projection, -w / fov, w / fov, -h / fov, h / fov, -1000, 1000);
+    // mat4.ortho(this.camera.projection, -w / fov, w / fov, -h / fov, h / fov, -1000, 1000);
     // mat4.perspective(this.camera.projection, fovy, aspect, near, far);
-  }
-
-  createModel(model) {
-    const gl = this.gl;
-
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW);
-
-    const indices = model.indices.length;
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indices, gl.STATIC_DRAW);
-
-    gl.enableVertexAttribArray(0);
-    gl.enableVertexAttribArray(1);
-
-    gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
-
-    return { vao, indices };
-  }
-
-  loadTexture(url, options, handler) {
-    const gl = this.gl;
-
-    let image = new Image();
-    image.addEventListener("load", () => {
-      const opts = Object.assign({ image }, options);
-      handler(WebGL.createTexture(gl, opts));
-    });
-    image.src = url;
   }
 }
 
