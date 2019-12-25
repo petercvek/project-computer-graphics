@@ -16,6 +16,8 @@ let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
 let smerFigure = 3.14159265;
+let vseSceneVIgri = [];
+let nalozeno = false;
 
 function round(value, decimals) {
   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
@@ -114,27 +116,27 @@ const keydownHandler = e => {
     premikam = true;
     if (e.code === "KeyW") {
       premik("x", "+");
-      zavrti(3.14159265);
-      // smerFigure = 3.14159265;
+      // zavrti(3.14159265);
+      smerFigure = 3.14159265;
     } else if (e.code === "KeyS") {
       premik("x", "-");
-      zavrti(0);
-      // smerFigure = 0;
+      // zavrti(0);
+      smerFigure = 0;
     } else if (e.code === "KeyD") {
       premik("y", "+");
-      if (Math.abs(smerFigure % 6.283) > 3.14) {
-        zavrti(4.71238265);
-      } else {
-        zavrti(-1.57079);
-      }
-      // smerFigure = -1.57079;
+      // if (Math.abs(smerFigure % 6.283) > 3.14) {
+      //   zavrti(4.71238265);
+      // } else {
+      //   zavrti(-1.57079);
+      // }
+      smerFigure = -1.57079;
     } else if (e.code === "KeyA") {
       premik("y", "-");
-      zavrti(1.57079);
-      // smerFigure = 1.57079;
+      // zavrti(1.57079);
+      smerFigure = 1.57079;
     }
   }
-  // console.log("X: " + pozicijaX, "Y: " + pozicijaY);
+  console.log("X: " + pozicijaX, "Y: " + pozicijaY);
 };
 const keyupHandler = e => {
   //   console.log(e);
@@ -171,128 +173,123 @@ class App extends Application {
     // this.root.addChild(this.camera);
 
     // Dodaj modele
-
     this.loader = new GLTFLoader(this.gl);
     // Load GLTF
     this.loader.load("modeli/pingvin/pingvin2.gltf");
-
     this.pingvin = new Node();
-    this.pingvin.model = this.loader;
-    this.root.addChild(this.pingvin);
+    // this.pingvin.model = this.loader;
+    // this.root.addChild(this.pingvin);
 
-    this.loader2 = new GLTFLoader(this.gl);
-    this.loader2.load("modeli/pingvin/pingvin2.gltf");
-    this.pingvin2 = new Node();
-    this.pingvin2.model = this.loader2;
-    this.root.addChild(this.pingvin2);
+    let loader = new GLTFLoader(this.gl);
+    loader.load("modeli/pingvin/pingvin2.gltf");
+    let interval = setInterval(() => {
+      this.pingvin.model = loader;
+      this.root.addChild(this.pingvin);
+      // console.log(row);
+      // console.log(row.gltf.scenes[0].nodes);
+      if (loader.built) {
+        console.log(loader);
+        vseSceneVIgri = vseSceneVIgri.concat(loader.gltf.scenes[0].nodes);
+        let t = this.pingvin.model.gltf.nodes[2].transform;
+        mat4.fromTranslation(t, [4, 0, 0]);
+        mat4.rotateX(t, t, 1.570796);
+        clearInterval(interval);
+      }
+    }, 100);
 
-    this.loader3 = new GLTFLoader(this.gl);
-    this.loader3.load("modeli/pingvin/pingvin2.gltf");
-    this.pingvin3 = new Node();
-    this.pingvin3.model = this.loader3;
-    this.root.addChild(this.pingvin3);
-
-    // premikanje kamere
-    // let t4 = this.camera.transform;
-    // mat4.fromTranslation(t4, [15, 7, 0]);
-    // mat4.rotateY(t4, t4, 0.4);
-    // mat4.rotateX(t4, t4, -0.7853);
+    for (let i = 0; i < 30; i++) {
+      let row = new GLTFLoader(this.gl);
+      row.load("modeli/grass/grass.gltf");
+      let interval = setInterval(() => {
+        let rowInWorld = new Node();
+        rowInWorld.model = row;
+        this.root.addChild(rowInWorld);
+        // console.log(row);
+        // console.log(row.gltf.scenes[0].nodes);
+        if (row.built) {
+          vseSceneVIgri = vseSceneVIgri.concat(row.gltf.scenes[0].nodes);
+          let t = rowInWorld.model.gltf.nodes[2].transform;
+          mat4.fromTranslation(t, [3, -1, 8 - i]);
+          mat4.rotateX(t, t, 1.570796);
+          clearInterval(interval);
+        }
+      }, 100);
+    }
 
     // Set two variables for controlling the cubes' rotations from GUI.
     this.leftRotation = 0;
     this.rightRotation = 0;
     this.forward = 0;
+    setTimeout(() => {
+      nalozeno = true;
+    }, 1000);
   }
 
   update() {
     // PREMIKANJE IN ROTIRANJE
     // mat4.fromTranslation(t1, [2 * pozicijaY, pozicijaZ, -2 * pozicijaX]);
     // mat4.rotateX(t1, t1, this.leftRotation);
-    if (this.pingvin.model.gltf) {
-      let s1 = this.pingvin.model.gltf;
-      // console.log(s1.nodes[2].transform);
-      if (s1.nodes[2].transform) {
-        let t2 = s1.nodes[2].transform;
-        mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 1, -2 * pozicijaX]);
-        mat4.rotateX(t2, t2, 1.570796);
-        mat4.rotateZ(t2, t2, smerFigure);
+    if (this.pingvin.model) {
+      if (this.pingvin.model.gltf) {
+        let s1 = this.pingvin.model.gltf;
+        // console.log(s1.nodes[2].transform);
+        if (s1.nodes[2].transform) {
+          // console.log(this.pingvin.model.gltf.nodes[2].transform);
+          let t2 = s1.nodes[2].transform;
+          mat4.fromTranslation(t2, [2 * pozicijaY + 0.3, pozicijaZ + 1, -2 * pozicijaX]);
+          mat4.rotateX(t2, t2, 1.570796);
+          mat4.rotateZ(t2, t2, smerFigure);
+        }
       }
     }
-
-    if (this.pingvin2.model.gltf) {
-      let s2 = this.pingvin2.model.gltf;
-      // console.log(s1.nodes[2].transform);
-      if (s2.nodes[2].transform) {
-        let t3 = s2.nodes[2].transform;
-        mat4.fromTranslation(t3, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
-        mat4.rotateX(t3, t3, 1.570796);
-        // mat4.rotateZ(t3, t3, smerFigure);
-      }
-    }
-
-    if (this.pingvin3.model.gltf) {
-      let s3 = this.pingvin3.model.gltf;
-      // console.log(s1.nodes[2].transform);
-      if (s3.nodes[2].transform) {
-        let t4 = s3.nodes[2].transform;
-        mat4.fromTranslation(t4, [2 * pozicijaY, pozicijaZ, -2 * pozicijaX + 1]);
-        mat4.rotateX(t4, t4, 1.570796);
-        // mat4.rotateZ(t3, t3, smerFigure);
-      }
-    }
-
-    // if (this.pingvin2.model.gltf) {
-    //   let s2 = this.pingvin2.model.gltf;
-    //   // console.log(s1.nodes[2].transform);
-    //   if (s2.nodes[2].transform) {
-    //     let t3 = s2.nodes[2].transform;
-    //     mat4.fromTranslation(t3, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
-    //     mat4.rotateX(t3, t3, 1.570796);
-    //     mat4.rotateZ(t3, t3, 3.14159265);
-    //   }
-    // }
   }
 
   render() {
-    if (!this.loader.built || !this.loader2.built || !this.loader3.built) {
+    if (!nalozeno) {
       return;
-    }
+    } else {
+      if (this.nastaviKamero == true) {
+        const camera = this.loader.getObjectByName("Camera");
+        // console.log(camera.transform);
+        let t4 = camera.transform;
+        mat4.rotateY(t4, t4, -0.4);
+        mat4.rotateZ(t4, t4, -0.3);
+        // mat4.fromTranslation(t4, [15, 7, 0]);
+        // mat4.fromTranslation(t4, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
+        this.nastaviKamero = false;
+      }
 
-    if (this.nastaviKamero == true) {
-      const camera = this.loader.getObjectByName("Camera");
+      // treba naloudati vse in jih zdruzit vse v eno sceno
+      // let vseScene = { name: "Scene", nodes: scene.nodes };
+      let vseScene2 = { name: "Scene", nodes: vseSceneVIgri };
+      // console.log(vseScene);
+      // console.log(vseScene2);
+
       // console.log(camera.transform);
-      let t4 = camera.transform;
-      mat4.rotateY(t4, t4, -0.3);
-      mat4.rotateZ(t4, t4, -0.3);
-      // mat4.fromTranslation(t4, [2 * pozicijaY + 2, pozicijaZ, -2 * pozicijaX]);
-      this.nastaviKamero = false;
+      // let t4 = camera.transform;
+      // mat4.fromYRotation(t4, t4, this.leftRotation);
+      // mat4.fromXRotation(t4, t4, -0.7853);
+
+      let camera = this.loader.getObjectByName("Camera");
+      let scene = this.loader.getObjectByName("Scene");
+
+      if (!scene || !camera) {
+        throw new Error("Scene or camera not present in glTF");
+      }
+
+      this.renderer.render(vseScene2, camera);
+      // this.renderer.render(scene3, camera);
+      // this.renderer.render(vseScene, camera);
+
+      // this.renderer.render(scene2, camera);
     }
-    const camera = this.loader.getObjectByName("Camera");
-    let scene = this.loader.getObjectByName("Scene");
-    let scene2 = this.loader2.getObjectByName("Scene");
-    let scene3 = this.loader3.getObjectByName("Scene");
-    // treba naloudati vse in jih zdruzit vse v eno sceno
-    let vseScene = { name: "Scene", nodes: scene.nodes.concat(scene2.nodes).concat(scene3.nodes) };
-    console.log(vseScene);
-
-    // console.log(camera.transform);
-    // let t4 = camera.transform;
-    // mat4.fromYRotation(t4, t4, this.leftRotation);
-    // mat4.fromXRotation(t4, t4, -0.7853);
-
-    if (!scene || !camera) {
-      throw new Error("Scene or camera not present in glTF");
-    }
-
-    this.renderer.render(vseScene, camera);
-    // this.renderer.render(scene2, camera);
   }
 
   resize() {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
-    console.log(w);
-    console.log(h);
+    // console.log(w);
+    // console.log(h);
     const aspect = w / h;
     const fov = 50;
     const fovy = Math.PI / 2;

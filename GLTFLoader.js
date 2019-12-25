@@ -315,7 +315,10 @@ export default class GLTFLoader {
         mat4.perspective(node.camera.matrix, fovy, aspect, near, far);
       } else if (node.camera.type === "orthographic") {
         const o = node.camera.orthographic;
-        const fov = 2;
+        const canvas = document.querySelector("canvas");
+        let w = canvas.clientWidth;
+        let h = canvas.clientHeight;
+        const fov = 180;
         const left = -o.xmag / fov;
         const right = o.xmag / fov;
         const bottom = -o.ymag / fov;
@@ -323,7 +326,8 @@ export default class GLTFLoader {
         // const near = o.znear;
         const near = -o.zfar * 100;
         const far = o.zfar * 100;
-        mat4.ortho(node.camera.matrix, left, right, bottom, top, near, far);
+        // mat4.ortho(node.camera.matrix, left, right, bottom, top, near, far);
+        mat4.ortho(node.camera.matrix, -w / fov, w / fov, -h / fov, h / fov, near, far);
       }
     }
 
