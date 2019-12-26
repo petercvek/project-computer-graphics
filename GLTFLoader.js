@@ -50,7 +50,7 @@ export default class GLTFLoader {
 
     await Promise.all(promises);
 
-    this.build();
+    return this.build();
   }
 
   loadGLTF(uri) {
@@ -86,6 +86,7 @@ export default class GLTFLoader {
     this.createScenes();
 
     this.built = true;
+    return this.gltf;
   }
 
   createSamplers() {
@@ -318,7 +319,7 @@ export default class GLTFLoader {
         const canvas = document.querySelector("canvas");
         let w = canvas.clientWidth;
         let h = canvas.clientHeight;
-        const fov = 180;
+        const fov = 150;
         const left = -o.xmag / fov;
         const right = o.xmag / fov;
         const bottom = -o.ymag / fov;
