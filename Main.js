@@ -100,18 +100,11 @@ class App extends Application {
     this.initGL();
 
     const generirajSvet = async () => {
-      let loader = new GLTFLoader(this.gl);
-      let gltf = await loader.load("modeli/pingvin/pingvin2.gltf");
-      this.pingvin = gltf;
-      this.vseSceneVIgri.push(gltf.scenes[0].nodes[1]);
-
-      this.nalozeno = true;
-
-      for (let i = 0; i < 15; i++) {
-        loader = new GLTFLoader(this.gl);
-        let gltf = await loader.load("modeli/grass/grass.gltf");
+      for (let i = 0; i < 30; i++) {
+        let loader2 = new GLTFLoader(this.gl);
+        let gltf = await loader2.load("modeli/grass/grass.gltf");
         let t = gltf.nodes[2].transform;
-        mat4.fromTranslation(t, [2.7, 0, 8 - i]);
+        mat4.fromTranslation(t, [3, 0, 8 - i]);
         mat4.rotateX(t, t, 1.570796);
         this.vseSceneVIgri.push(gltf.scenes[0].nodes[1]);
       }
@@ -129,9 +122,9 @@ class App extends Application {
       for (let i = 0; i < trees.length; i++) {
         for (let j = 0; j < trees[i].length; j++) {
           if (trees[i][j] == 1) {
-            loader = new GLTFLoader(this.gl);
-            // let gltf = await loader.load("modeli/tree/" + differentTrees[Math.floor(Math.random() * differentTrees.length)]);
-            let gltf = await loader.load("modeli/tree/tree0.gltf");
+            let loader = new GLTFLoader(this.gl);
+            let gltf = await loader.load("modeli/tree/" + differentTrees[Math.floor(Math.random() * differentTrees.length)]);
+            // let gltf = await loader.load("modeli/tree/tree0.gltf");
             let t = gltf.nodes[2].transform;
             mat4.fromTranslation(t, [j - 1, 0.5, -i + 2]);
             mat4.rotateX(t, t, 1.570796);
@@ -139,6 +132,12 @@ class App extends Application {
           }
         }
       }
+
+      let loader = new GLTFLoader(this.gl);
+      let gltf = await loader.load("modeli/vampire/vampire.gltf");
+      this.hero = gltf;
+      this.vseSceneVIgri.push(gltf.scenes[0].nodes[1]);
+      this.nalozeno = true;
     };
 
     generirajSvet();
@@ -146,14 +145,19 @@ class App extends Application {
 
   update() {
     // PREMIKANJE IN ROTIRANJE
-    if (this.pingvin) {
-      let s1 = this.pingvin;
+    if (this.hero) {
+      let s1 = this.hero;
       if (s1.nodes[2].transform) {
         let t2 = s1.nodes[2].transform;
         mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 0.5, -2 * pozicijaX]);
         mat4.rotateX(t2, t2, 1.570796);
         mat4.rotateZ(t2, t2, smerFigure);
       }
+
+      this.hero.nodes[0].parent.translation[0] += 0.1;
+      // console.log(camera);
+
+      // mat4.translate(camera, camera, [0, -0.1, 0]);
     }
   }
 
@@ -164,7 +168,7 @@ class App extends Application {
       return;
     }
 
-    let camera = this.pingvin.nodes[0];
+    let camera = this.hero.nodes[0];
     if (this.nastaviKamero == true) {
       // nastavi kamero samo enkrat enkrat
       let t4 = camera.transform;
