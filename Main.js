@@ -1,15 +1,13 @@
 import Application from "./common/Application.js";
 import * as WebGL from "./WebGL.js";
 
-import Node from "./Node.js";
-
 import shaders from "./shaders.js";
-import * as CubeModel from "./cube.js";
 
 import GLTFLoader from "./GLTFLoader.js";
 import Renderer from "./Renderer.js";
 
 import Trees from "./Trees.js";
+import Cars from "./Cars.js";
 
 const mat4 = glMatrix.mat4;
 
@@ -181,13 +179,18 @@ class App extends Application {
 
     this.initGL();
 
+    this.cars = new Cars();
+    console.log(this.cars.cars[0].position);
+
     const generirajSvet = async () => {
       this.loader = new GLTFLoader(this.gl);
       this.grassGltf = await this.loader.load("modeli/grass/grass.gltf");
       this.grassMesh = this.grassGltf.scenes[0].nodes[0].mesh;
+      this.roadGltf = await this.loader.load("modeli/road/road.gltf");
+      this.roadMesh = this.roadGltf.scenes[0].nodes[0].mesh;
 
       // naredi 20 vrstic trave
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 11; i++) {
         let gltf = deepCopy(this.grassGltf); // naredi kopijo
         gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
         let t = gltf.scenes[0].nodes[0].transform; // nastima pozicijo
@@ -216,11 +219,27 @@ class App extends Application {
             gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
 
             let t = gltf.scenes[0].nodes[0].transform;
-            mat4.fromTranslation(t, [j - 1, 0.5, -i + 2]);
+            mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
             mat4.rotateX(t, t, 1.570796);
 
             this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
           }
+        }
+        if (!trees.isTreeLine(trees.map[i])) {
+          // če ni dreves v tisti liniji naredi tam cesto
+          let gltf = deepCopy(this.roadGltf);
+          gltf.scenes[0].nodes[0].mesh = this.roadMesh;
+          let t = gltf.scenes[0].nodes[0].transform;
+          mat4.fromTranslation(t, [3, 0, -i - 2]);
+          mat4.rotateX(t, t, 1.570796);
+          this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+        } else {
+          let gltf = deepCopy(this.grassGltf); // naredi kopijo
+          gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
+          let t = gltf.scenes[0].nodes[0].transform; // nastima pozicijo
+          mat4.fromTranslation(t, [3, 0, -i - 2]);
+          mat4.rotateX(t, t, 1.570796);
+          this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]); // doda v sceno
         }
       }
 
@@ -243,7 +262,7 @@ class App extends Application {
             let gltf = deepCopy(this.enviromentObjects[randomNumber]);
             gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
             let t = gltf.scenes[0].nodes[0].transform;
-            mat4.fromTranslation(t, [j - 1, 0.5, -i + 2]);
+            mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
             mat4.rotateX(t, t, 1.570796);
 
             this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
@@ -266,7 +285,7 @@ class App extends Application {
       let s1 = this.hero;
       if (s1.nodes[2].transform) {
         let t2 = s1.nodes[2].transform;
-        mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 0.5, -2 * pozicijaX]);
+        mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 0.4, -2 * pozicijaX]);
         mat4.rotateX(t2, t2, 1.570796);
         mat4.rotateZ(t2, t2, smerFigure);
       }
@@ -279,6 +298,16 @@ class App extends Application {
       console.log(trees.map.length);
       izrisiNoveVrstice();
     }
+
+    // if (this.hero) {
+    //   let s1 = this.hero;
+    //   if (s1.nodes[2].transform) {
+    //     let t2 = s1.nodes[2].transform;
+    //     mat4.fromTranslation(t2, [this.cars.cars[0].position, pozicijaZ + 0.5, -2 * pozicijaX]);
+    //   }
+    // }
+
+    // console.log(this.cars.cars[0].position);
   }
 
   render() {
