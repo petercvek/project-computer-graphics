@@ -1,12 +1,13 @@
 export default class Car {
-  constructor() {
-    this.position = 2;
-    this.moveCar(3);
+  constructor(direction, speed, xPosition) {
+    this.xPosition = xPosition;
+    this.yPosition = -10 * direction;
+    this.moveCar(speed, direction);
   }
 
-  moveCar(speed) {
+  moveCar(speed, direction) {
     setInterval(() => {
-      this.position += 0.01 * speed;
+      this.yPosition += 0.01 * speed * direction;
     }, 20);
   }
 }
