@@ -13,14 +13,14 @@
   "nodes": [
     {
       "mesh": 0,
-      "name": "strip_grass_2",
+      "name": "rock",
       "rotation": [0.7071068286895752, 0, 0, 0.7071067094802856]
     }
   ],
   "materials": [
     {
       "doubleSided": true,
-      "name": "strip_grass_2-tex.tex",
+      "name": "rock-tex.tex",
       "pbrMetallicRoughness": {
         "baseColorTexture": {
           "index": 0,
@@ -33,7 +33,7 @@
   ],
   "meshes": [
     {
-      "name": "strip_grass_2",
+      "name": "rock",
       "primitives": [
         {
           "attributes": {
@@ -55,64 +55,64 @@
   "images": [
     {
       "mimeType": "image/png",
-      "name": "dark-grass",
-      "uri": "dark-grass.png"
+      "name": "1",
+      "uri": "1.png"
     }
   ],
   "accessors": [
     {
       "bufferView": 0,
       "componentType": 5126,
-      "count": 24,
-      "max": [12.5, 0.5, 0],
-      "min": [-12.5, -0.5, -0.375],
+      "count": 64,
+      "max": [0.3125, 0.3125, 0],
+      "min": [-0.3125, -0.3125, -0.5],
       "type": "VEC3"
     },
     {
       "bufferView": 1,
       "componentType": 5126,
-      "count": 24,
+      "count": 64,
       "type": "VEC3"
     },
     {
       "bufferView": 2,
       "componentType": 5126,
-      "count": 24,
+      "count": 64,
       "type": "VEC2"
     },
     {
       "bufferView": 3,
       "componentType": 5123,
-      "count": 36,
+      "count": 96,
       "type": "SCALAR"
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
-      "byteLength": 288,
+      "byteLength": 768,
       "byteOffset": 0
     },
     {
       "buffer": 0,
-      "byteLength": 288,
-      "byteOffset": 288
+      "byteLength": 768,
+      "byteOffset": 768
+    },
+    {
+      "buffer": 0,
+      "byteLength": 512,
+      "byteOffset": 1536
     },
     {
       "buffer": 0,
       "byteLength": 192,
-      "byteOffset": 576
-    },
-    {
-      "buffer": 0,
-      "byteLength": 72,
-      "byteOffset": 768
+      "byteOffset": 2048
     }
   ],
   "buffers": [
     {
-      "byteLength": 840,
-      "uri": "grass.bin"
+      "byteLength": 2240,
+      "uri": "rock2.bin"
     }
   ]
 }
