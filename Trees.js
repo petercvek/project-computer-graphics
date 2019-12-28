@@ -1,7 +1,7 @@
 export default class Trees {
   constructor() {
     this.map = Array.from({ length: 1 }, () => []);
-    this.map[0] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    this.map[0] = [1, 1, 1, 1, 1, 1, 1, 1, 1];
     this.map[1] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     for (let i = 0; i < 20; i++) this.nextLine();
   }

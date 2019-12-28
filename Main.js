@@ -13,7 +13,7 @@ import Trees from "./Trees.js";
 
 const mat4 = glMatrix.mat4;
 
-let pozicijaX = 1; // min 0
+let pozicijaX = 0; // min 0
 let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
@@ -92,7 +92,6 @@ function premik(smer, usmerjenost) {
         if (usmerjenost === "+") {
           // Naprej - W
           pozicijaX = round(pozicijaX + 0.01, 3);
-          // nova vrstica vedno ko pritisneš [W]
         } else {
           // Nazaj - S
           pozicijaX = round(pozicijaX - 0.01, 3);
@@ -129,7 +128,7 @@ const keydownHandler = e => {
       } else {
         samoSkoci();
       }
-      trees.nextLine();
+      trees.nextLine(); // nova vrstica vedno ko klikns W
     } else if (e.code === "KeyS") {
       smerFigure = 0;
       if (trees.map[(0.5 + pozicijaX) * 2][(0.5 + pozicijaY) * 2] !== 1) {
@@ -139,21 +138,21 @@ const keydownHandler = e => {
       }
     } else if (e.code === "KeyD") {
       smerFigure = -1.57079;
-      if (trees.map[(1 + pozicijaX) * 2][(1 + pozicijaY) * 2] !== 1) {
+      if (trees.map[(1 + pozicijaX) * 2][(1 + pozicijaY) * 2] !== 1 && pozicijaY < 3.5) {
         premik("y", "+");
       } else {
         samoSkoci();
       }
     } else if (e.code === "KeyA") {
       smerFigure = 1.57079;
-      if (trees.map[(1 + pozicijaX) * 2][pozicijaY * 2] !== 1) {
+      if (trees.map[(1 + pozicijaX) * 2][pozicijaY * 2] !== 1 && pozicijaY > -0.5) {
         premik("y", "-");
       } else {
         samoSkoci();
       }
     }
   }
-  // console.log("X: " + pozicijaX, "Y: " + pozicijaY);
+  console.log("X: " + pozicijaX, "Y: " + pozicijaY, "Z: " + pozicijaZ);
 };
 const keyupHandler = e => {
   //   console.log(e);
@@ -183,65 +182,51 @@ class App extends Application {
     this.initGL();
 
     const generirajSvet = async () => {
-      let loader4 = new GLTFLoader(this.gl);
-      let gltf2 = await loader4.load("modeli/vampire/vampire.gltf");
-      this.hero = gltf2;
+      this.loader = new GLTFLoader(this.gl);
+      this.grassGltf = await this.loader.load("modeli/grass/grass.gltf");
+      this.grassMesh = this.grassGltf.scenes[0].nodes[0].mesh;
 
-      let grassLoader = new GLTFLoader(this.gl);
-      let grassGltf = await grassLoader.load("modeli/grass/grass.gltf");
-      let mesh = grassGltf.scenes[0].nodes[0].mesh;
-
-      // let gltfScena = gltf.scenes[0].nodes[0];
-      // console.log(grassGltf);
-
-      for (let i = 0; i < 20; i++) {
-        const gltf = deepCopy(grassGltf); // Object.assign({ index: i }, grassGltf);
-        let t = gltf.scenes[0].nodes[0].transform;
+      // naredi 20 vrstic trave
+      for (let i = 0; i < 30; i++) {
+        let gltf = deepCopy(this.grassGltf); // naredi kopijo
+        gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
+        let t = gltf.scenes[0].nodes[0].transform; // nastima pozicijo
         mat4.fromTranslation(t, [3, 0, 8 - i]);
         mat4.rotateX(t, t, 1.570796);
-        gltf.scenes[0].nodes[0].mesh = mesh;
-        // console.log(gltf.scenes[0].nodes[0].transform);
-        this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+        this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]); // doda v sceno
       }
-      // console.log(this.vseSceneVIgri);
 
-      let enviromentObjects = [
-        "tree/tree0.gltf",
-        "tree/tree1.gltf",
-        "tree/tree2.gltf",
-        "tree/tree3.gltf",
-        "rock/rock.gltf",
-        "rock/rock2.gltf"
-      ];
-      // let drevoLoader = new GLTFLoader(this.gl);
-      // this.drevoGltf = await drevoLoader.load("modeli/tree/tree0.gltf");
+      let drevo0Gltf = await this.loader.load("modeli/tree/tree0.gltf");
+      let drevo0Mesh = drevo0Gltf.scenes[0].nodes[0].mesh;
+      let drevo1Gltf = await this.loader.load("modeli/tree/tree1.gltf");
+      let drevo1Mesh = drevo1Gltf.scenes[0].nodes[0].mesh;
+      let drevo2Gltf = await this.loader.load("modeli/tree/tree2.gltf");
+      let drevo2Mesh = drevo2Gltf.scenes[0].nodes[0].mesh;
+      let rock0Gltf = await this.loader.load("modeli/rock/rock.gltf");
+      let rock0Mesh = rock0Gltf.scenes[0].nodes[0].mesh;
+
+      this.enviromentObjects = [drevo0Gltf, drevo1Gltf, drevo2Gltf, rock0Gltf];
+      this.enviromentObjectsMesh = [drevo0Mesh, drevo1Mesh, drevo2Mesh, rock0Mesh];
 
       for (let i = 0; i < trees.map.length; i++) {
         for (let j = 0; j < trees.map[i].length; j++) {
+          let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
           if (trees.map[i][j] == 1) {
-            // let gltfScena = await Object.assign({}, this.drevoGltf.scenes[0]);
-            // console.log(gltfScena.nodes[0].transform);
+            let gltf = deepCopy(this.enviromentObjects[randomNumber]);
+            gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
 
-            // let loader = new GLTFLoader(this.gl);
-
-            let drevoLoader = new GLTFLoader(this.gl);
-            // let gltf = await drevoLoader.load("modeli/" + enviromentObjects[Math.floor(Math.random() * enviromentObjects.length)]);
-            let gltf = await drevoLoader.load("modeli/tree/tree0.gltf");
             let t = gltf.scenes[0].nodes[0].transform;
             mat4.fromTranslation(t, [j - 1, 0.5, -i + 2]);
             mat4.rotateX(t, t, 1.570796);
+
             this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
-            // console.log(gltfScena.nodes[0].transform);
-            // console.log(this.vseSceneVIgri);
           }
         }
       }
 
-      let loader = new GLTFLoader(this.gl);
-      let gltf = await loader.load("modeli/vampire/vampire.gltf");
-      this.hero = gltf;
-
-      this.vseSceneVIgri.push(gltf.scenes[0].nodes[1]);
+      let heroGltf = await this.loader.load("modeli/vampire/vampire.gltf");
+      this.hero = heroGltf;
+      this.vseSceneVIgri.push(heroGltf.scenes[0].nodes[1]);
       this.nalozeno = true;
     };
 
@@ -250,22 +235,29 @@ class App extends Application {
   }
 
   update() {
-    const izrisiNoveVrstice = async izrisanihVrstic => {
-      for (let i = izrisanihVrstic; i < trees.map.length; i++) {
+    const izrisiNoveVrstice = async () => {
+      for (let i = this.izrisanihVrstic; i < trees.map.length; i++) {
         for (let j = 0; j < trees.map[i].length; j++) {
+          let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
           if (trees.map[i][j] == 1) {
-            const gltfScena = Object.assign({}, this.drevoGltf.scenes[0]);
-            // const randomObjekt = Object.assign({}, objketi[Math.floor(Math.random() * objketi.length)]);
-            // let loader = new GLTFLoader(this.gl);
-            // let gltf = await loader.load("modeli/" + enviromentObjects[Math.floor(Math.random() * enviromentObjects.length)]);
-            // let gltf = await loader.load("modeli/tree/tree0.gltf");
-            let t = gltfScena.nodes[0].transform;
+            let gltf = deepCopy(this.enviromentObjects[randomNumber]);
+            gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
+            let t = gltf.scenes[0].nodes[0].transform;
             mat4.fromTranslation(t, [j - 1, 0.5, -i + 2]);
             mat4.rotateX(t, t, 1.570796);
-            this.vseSceneVIgri.push(gltfScena.nodes[0]);
-            console.log(this.vseSceneVIgri);
+
+            this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
           }
         }
+
+        let gltf = deepCopy(this.grassGltf);
+        gltf.scenes[0].nodes[0].mesh = this.grassMesh;
+        let t = gltf.scenes[0].nodes[0].transform;
+        mat4.fromTranslation(t, [3, 0, -i]);
+        mat4.rotateX(t, t, 1.570796);
+        this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+
+        this.izrisanihVrstic++;
       }
     };
 
@@ -283,10 +275,9 @@ class App extends Application {
       mat4.getRotation(t4, t4);
       mat4.fromRotationTranslation(t4, t4, [0.665 * pozicijaX + 1.33, 0, -1 * pozicijaX - 1]);
     }
-    if (this.izrisanihVrstic != trees.map.length) {
+    if (this.izrisanihVrstic != trees.map.length && !premikam) {
       console.log(trees.map.length);
-      // izrisiNoveVrstice(this.izrisanihVrstic);
-      this.izrisanihVrstic++;
+      izrisiNoveVrstice();
     }
   }
 
