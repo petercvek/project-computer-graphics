@@ -16,27 +16,12 @@ let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
 let smerFigure = 3.14159265;
+let st_ceste = 0; // 1-inf. - stevilka ceste (služi tudi kot score) kjer se karakter trenutno nahaja (začne se z 1)
+let cx = 2; // index kjer je karakter (namesto da gre u minus in po +0.5 gre od 0 do inf. u korakih +1)
 
 let trees = new Trees(); // nazačetku takoj doda 10 vrstic dreves (samo da se bo vidlo kako se sproti generirajo, potem bomo na začetku zgeneriral cca. 20 vrstic dreves)
 function round(value, decimals) {
   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
-}
-
-function samoSkoci() {
-  var time = 0;
-  var interval = setInterval(function() {
-    if (time < 50) {
-      if (time > 24) {
-        pozicijaZ = round(pozicijaZ - 0.02, 3);
-      } else {
-        pozicijaZ = round(pozicijaZ + 0.02, 3);
-      }
-      time++;
-    } else {
-      clearInterval(interval);
-      premikam = false;
-    }
-  }, 2);
 }
 
 function deepCopy(obj) {
@@ -82,36 +67,67 @@ function deepCopy(obj) {
   return rv;
 }
 
-function premik(smer, usmerjenost) {
-  var time = 0;
-  var interval = setInterval(function() {
-    if (time < 50) {
-      if (smer === "x") {
-        if (usmerjenost === "+") {
-          // Naprej - W
-          pozicijaX = round(pozicijaX + 0.01, 3);
-        } else {
-          // Nazaj - S
-          pozicijaX = round(pozicijaX - 0.01, 3);
-        }
-      } else {
-        if (usmerjenost === "+") {
-          pozicijaY = round(pozicijaY + 0.01, 3);
-        } else {
-          pozicijaY = round(pozicijaY - 0.01, 3);
-        }
-      }
-      if (time > 24) {
-        pozicijaZ = round(pozicijaZ - 0.02, 3);
-      } else {
-        pozicijaZ = round(pozicijaZ + 0.02, 3);
-      }
-      time++;
-    } else {
-      clearInterval(interval);
+function samoSkoci() {
+  new Between(pozicijaZ, pozicijaZ + 0.3)
+    .time(100)
+    .loop("bounce", 2)
+    .on("update", value => {
+      pozicijaZ = value;
+    })
+    .on("complete", () => {
       premikam = false;
+    });
+}
+
+function premik(smer, usmerjenost) {
+  // var time = 0;
+  // var interval = setInterval(function() {
+  // if (time < 50) {
+  if (smer === "x") {
+    const trenutna = pozicijaX;
+    let koncna;
+    if (usmerjenost === "+") {
+      // Naprej - W
+      koncna = pozicijaX + 0.5;
+    } else {
+      // Nazaj - S
+      koncna = pozicijaX - 0.5;
     }
-  }, 2);
+    new Between(trenutna, koncna).time(200).on("update", value => {
+      pozicijaX = value;
+    });
+  } else {
+    const trenutna = pozicijaY;
+    let koncna;
+    if (usmerjenost === "+") {
+      koncna = pozicijaY + 0.5;
+    } else {
+      koncna = pozicijaY - 0.5;
+    }
+    new Between(trenutna, koncna).time(200).on("update", value => {
+      pozicijaY = value;
+    });
+  }
+  new Between(pozicijaZ, pozicijaZ + 0.3)
+    .time(100)
+    .loop("bounce", 2)
+    .on("update", value => {
+      pozicijaZ = value;
+    })
+    .on("complete", () => {
+      premikam = false;
+    });
+  // if (time > 24) {
+  //   pozicijaZ = round(pozicijaZ - 0.02, 3);
+  // } else {
+  //   pozicijaZ = round(pozicijaZ + 0.02, 3);
+  // }
+  // time++;
+  // } else {
+  // clearInterval(interval);
+
+  // }
+  // }, 2);
 }
 
 const keydownHandler = e => {
@@ -127,12 +143,19 @@ const keydownHandler = e => {
         samoSkoci();
       }
       trees.nextLine(); // nova vrstica vedno ko klikns W
+      if (!trees.isTreeLine(trees.map[cx + 1]) && cx > 2) {
+        // če je polje kjer se nahaja karakter cesta
+        st_ceste++;
+      }
     } else if (e.code === "KeyS") {
       smerFigure = 0;
       if (trees.map[(0.5 + pozicijaX) * 2][(0.5 + pozicijaY) * 2] !== 1) {
         premik("x", "-");
       } else {
         samoSkoci();
+      }
+      if (!trees.isTreeLine(trees.map[cx]) && cx > 2) {
+        st_ceste--;
       }
     } else if (e.code === "KeyD") {
       smerFigure = -1.57079;
@@ -150,7 +173,7 @@ const keydownHandler = e => {
       }
     }
   }
-  console.log("X: " + pozicijaX, "Y: " + pozicijaY, "Z: " + pozicijaZ);
+  // console.log("X: " + pozicijaX, "Y: " + pozicijaY, "Z: " + pozicijaZ);
 };
 const keyupHandler = e => {
   //   console.log(e);
@@ -267,7 +290,7 @@ class App extends Application {
         this.avti.push(gltf);
       }
     };
-
+    this.end = false;
     generirajSvet();
     this.izrisanihVrstic = trees.map.length;
   }
@@ -308,47 +331,66 @@ class App extends Application {
         this.izrisanihVrstic++;
       }
     };
-
-    // PREMIKANJE IN ROTIRANJE
-    if (this.hero) {
-      let s1 = this.hero;
-      if (s1.nodes[2].transform) {
-        let t2 = s1.nodes[2].transform;
-        mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 0.4, -2 * pozicijaX]);
-        mat4.rotateX(t2, t2, 1.570796);
-        mat4.rotateZ(t2, t2, smerFigure);
+    if (!this.end) {
+      // PREMIKANJE IN ROTIRANJE
+      if (this.hero) {
+        let s1 = this.hero;
+        if (s1.nodes[2].transform) {
+          let t2 = s1.nodes[2].transform;
+          mat4.fromTranslation(t2, [2 * pozicijaY, pozicijaZ + 0.4, -2 * pozicijaX]);
+          mat4.rotateX(t2, t2, 1.570796);
+          mat4.rotateZ(t2, t2, smerFigure);
+        }
+        let camera = this.hero.nodes[0];
+        let t4 = camera.transform;
+        mat4.getRotation(t4, t4);
+        mat4.fromRotationTranslation(t4, t4, [0.665 * pozicijaX + 1.33, 0, -1 * pozicijaX - 1]);
       }
-      let camera = this.hero.nodes[0];
-      let t4 = camera.transform;
-      mat4.getRotation(t4, t4);
-      mat4.fromRotationTranslation(t4, t4, [0.665 * pozicijaX + 1.33, 0, -1 * pozicijaX - 1]);
-    }
-    if (this.izrisanihVrstic != trees.map.length && !premikam) {
-      console.log(trees.map.length);
-      izrisiNoveVrstice();
-    }
+      if (this.izrisanihVrstic != trees.map.length && !premikam) {
+        // console.log(trees.map.length);
+        izrisiNoveVrstice();
+      }
 
-    if (this.car) {
-      let counter = 0;
-      // console.log(this.roads);
-      for (let vrstica = 0; vrstica < this.roads.length; vrstica++) {
-        for (let avto = 0; avto < this.roads[vrstica].cars.length; avto++) {
-          let enAvto = this.avti[counter];
-          let matrika = enAvto.scenes[0].nodes[0].transform;
-          // console.log(this.roads[vrstica].cars[avto].xPosition);
-
-          mat4.fromTranslation(matrika, [this.roads[vrstica].cars[avto].yPosition, 0.4, -this.roads[vrstica].cars[avto].xPosition - 2]);
-          mat4.rotateX(matrika, matrika, 1.570796);
-          if (this.roads[vrstica].cars[avto] == 1) {
-            // zavrti v tisto smer k je obrnjen
-            mat4.rotateZ(matrika, matrika, 4.712388);
-          } else {
-            mat4.rotateZ(matrika, matrika, 1.570796);
+      if (this.car) {
+        let counter = 0;
+        // console.log(this.roads);
+        for (let vrstica = 0; vrstica < this.roads.length; vrstica++) {
+          for (let avto = 0; avto < this.roads[vrstica].cars.length; avto++) {
+            let enAvto = this.avti[counter];
+            let matrika = enAvto.scenes[0].nodes[0].transform;
+            if (this.roads[vrstica].cars[avto].xPosition * 0.5 - pozicijaX < -5) {
+              this.roads[vrstica].deleteRow();
+              break;
+            }
+            mat4.fromTranslation(matrika, [this.roads[vrstica].cars[avto].yPosition, 0.4, -this.roads[vrstica].cars[avto].xPosition - 2]);
+            mat4.rotateX(matrika, matrika, 1.570796);
+            if (this.roads[vrstica].direction == 1) {
+              // zavrti v tisto smer k je obrnjen
+              mat4.rotateZ(matrika, matrika, 4.712388);
+            } else {
+              mat4.rotateZ(matrika, matrika, 1.570796);
+            }
+            counter++;
           }
-          counter++;
         }
       }
     }
+    // mapiranje pozicije X karakterja v index ceste na keteri se nahaja = (pozicijaX -1.5) * 2 + 1
+    // let trenutna_cesta = (pozicijaX -1.5) * 2 + 1;
+
+    // collision detection:
+    if (st_ceste > 0 && !trees.isTreeLine(trees.map[Math.round(cx)])) {
+      // če ni TreeLine pomeni, da se nahaja na cesti in je killable
+      for (let i = 0; i < this.roads[st_ceste - 1].cars.length; i++) {
+        // loop čez objekte avtov v vrstici kjer se trenutno nahaja karakter
+        if (this.roads[st_ceste - 1].cars[i].isHit(pozicijaY))
+          // če ga avto zadane (glej razred car -> isHit)
+          // kaj narediti ko umreš:
+          // console.log("dead");
+          this.end = true;
+      }
+    }
+    cx = (pozicijaX + 1) * 2;
   }
 
   render() {

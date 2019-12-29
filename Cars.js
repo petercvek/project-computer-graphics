@@ -19,7 +19,7 @@ export default class Cars {
     this.cars.push(car);
 
     // nato pa se ponavlja na waitTime
-    setInterval(() => {
+    this.interval = setInterval(() => {
       let car = new Car(this.direction, this.speed, xPosition);
       this.cars.push(car);
       this.deleteCars();
@@ -30,5 +30,10 @@ export default class Cars {
   deleteCars() {
     // pogleda ce je avto izven zaslona
     this.cars = this.cars.filter(car => car.yPosition < 15 && car.yPosition > -15);
+  }
+
+  deleteRow() {
+    clearInterval(this.interval);
+    this.cars = [];
   }
 }
