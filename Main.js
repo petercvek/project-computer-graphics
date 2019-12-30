@@ -9,6 +9,8 @@ import Renderer from "./Renderer.js";
 import Trees from "./Trees.js";
 import Cars from "./Cars.js";
 
+import Sounds from "./Sounds.js";
+
 const mat4 = glMatrix.mat4;
 
 let pozicijaX = 0; // min 0
@@ -16,9 +18,11 @@ let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
 let smerFigure = 3.14159265;
+let sound = new Sounds();
 let score = 0;
 let st_ceste = 0; // 1-inf. - stevilka ceste (služi tudi kot score) kjer se karakter trenutno nahaja (začne se z 1)
 let cx = 2; // index kjer je karakter (namesto da gre u minus in po +0.5 gre od 0 do inf. u korakih +1)
+let end = false;
 
 let trees = new Trees(); // nazačetku takoj doda 10 vrstic dreves (samo da se bo vidlo kako se sproti generirajo, potem bomo na začetku zgeneriral cca. 20 vrstic dreves)
 function round(value, decimals) {
@@ -97,9 +101,13 @@ function premik(smer, usmerjenost) {
         pozicijaX = value;
       })
       .on("complete", value => {
-        if (score < value * 2) {
-          score = value * 2;
-          document.getElementById("score").innerHTML = score;
+        if (score - trees.coins * 5 < value * 2) {
+          // odšteješ število kovancev * 5 da gre pravilno v if (vsak kovanec je 5 točk)
+          score += 1;
+        }
+        if (trees.isCoin(pozicijaX, pozicijaY)) {
+          score += 5;
+          sound.gotCoin.play();
         }
       });
   } else {
@@ -110,9 +118,17 @@ function premik(smer, usmerjenost) {
     } else {
       koncna = pozicijaY - 0.5;
     }
-    new Between(trenutna, koncna).time(200).on("update", value => {
-      pozicijaY = value;
-    });
+    new Between(trenutna, koncna)
+      .time(200)
+      .on("update", value => {
+        pozicijaY = value;
+      })
+      .on("complete", value => {
+        if (trees.isCoin(pozicijaX, pozicijaY)) {
+          score += 5;
+          sound.gotCoin.play();
+        }
+      });
   }
   // skok v zrak
   new Between(pozicijaZ, pozicijaZ + 0.3)
@@ -123,11 +139,12 @@ function premik(smer, usmerjenost) {
     })
     .on("complete", () => {
       premikam = false;
+      document.getElementById("score").innerHTML = score;
     });
 }
 
 const keydownHandler = e => {
-  if (premikam) {
+  if (premikam || end) {
     return 0;
   } else {
     premikam = true;
@@ -208,6 +225,11 @@ class App extends Application {
       this.roadGltf = await this.loader.load("modeli/road/road.gltf");
       this.roadMesh = this.roadGltf.scenes[0].nodes[0].mesh;
 
+      /////////////REPLACE WITH COIN://////////////////////////REPLACE WITH COIN://////////////////////////REPLACE WITH COIN://///////////
+      this.coinGltf = await this.loader.load("modeli/rock/rock.gltf");
+      this.coinMesh = this.coinGltf.scenes[0].nodes[0].mesh;
+      /////////////REPLACE WITH COIN://////////////////////////REPLACE WITH COIN://////////////////////////REPLACE WITH COIN://///////////
+
       // naredi 20 vrstic trave
       for (let i = 0; i < 10; i++) {
         let gltf = deepCopy(this.grassGltf); // naredi kopijo
@@ -243,6 +265,18 @@ class App extends Application {
           this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
           let road = new Cars(i);
           this.roads.push(road);
+          for (let k = 0; k < trees.map[0].length; k++) {
+            if (trees.map[i][k] === 2) {
+              // coin /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+              let gltf = deepCopy(rock0Gltf);
+              gltf.scenes[0].nodes[0].mesh = rock0Mesh;
+              let t = gltf.scenes[0].nodes[0].transform;
+              console.log("koordinate kovanca: [" + i, k + "]");
+              mat4.fromTranslation(t, [k - 1, 0.4, -i + 2]);
+              mat4.rotateX(t, t, 1.570796);
+              this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+            }
+          }
         } else {
           let gltf = deepCopy(this.grassGltf); // naredi kopijo
           gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
@@ -276,7 +310,7 @@ class App extends Application {
       let carMesh = this.carGltf.scenes[0].nodes[0].mesh;
       this.car = this.carGltf;
 
-      for (let k = 0; k < 50; k++) {
+      for (let k = 0; k < 100; k++) {
         let gltf = deepCopy(this.carGltf);
         gltf.scenes[0].nodes[0].mesh = carMesh;
         let t = gltf.scenes[0].nodes[0].transform;
@@ -287,9 +321,9 @@ class App extends Application {
         this.avti.push(gltf);
       }
     };
-    this.end = false;
     generirajSvet();
     this.izrisanihVrstic = trees.map.length;
+    console.log(trees.map);
   }
 
   update() {
@@ -305,6 +339,18 @@ class App extends Application {
           this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
           let road = new Cars(i);
           this.roads.push(road);
+          for (let k = 0; k < trees.map[0].length; k++) {
+            if (trees.map[i][k] === 2) {
+              // coin /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+              let gltf = deepCopy(this.coinGltf);
+              gltf.scenes[0].nodes[0].mesh = this.coinMesh;
+              let t = gltf.scenes[0].nodes[0].transform;
+              console.log("koordinate kovanca: [" + i, k + "]");
+              mat4.fromTranslation(t, [k - 1, 0.4, -i + 2]);
+              mat4.rotateX(t, t, 1.570796);
+              this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+            }
+          }
         } else {
           let gltf = deepCopy(this.grassGltf); // naredi kopijo
           gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
@@ -321,7 +367,6 @@ class App extends Application {
               let t = gltf.scenes[0].nodes[0].transform;
               mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
               mat4.rotateX(t, t, 1.570796);
-
               this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
             }
           }
@@ -354,14 +399,13 @@ class App extends Application {
         let counter = 0;
         for (let vrstica = 0; vrstica < this.roads.length; vrstica++) {
           for (let avto = 0; avto < this.roads[vrstica].cars.length; avto++) {
-            if (counter >= 49) {
+            if (counter >= 99) {
               break;
             }
             let enAvto = this.avti[counter];
             let matrika = enAvto.scenes[0].nodes[0].transform;
-            if (this.roads[vrstica].cars[avto].xPosition * 0.5 - pozicijaX < -7) {
+            if (this.roads[vrstica].cars[avto].xPosition * 0.5 - pozicijaX < -10) {
               this.roads[vrstica].deleteRow();
-              vrstica++;
               continue;
             } else {
               mat4.fromTranslation(matrika, [this.roads[vrstica].cars[avto].yPosition, 0.4, -this.roads[vrstica].cars[avto].xPosition - 2]);
@@ -386,11 +430,17 @@ class App extends Application {
       // če ni TreeLine pomeni, da se nahaja na cesti in je killable
       for (let i = 0; i < this.roads[st_ceste - 1].cars.length; i++) {
         // loop čez objekte avtov v vrstici kjer se trenutno nahaja karakter
-        if (this.roads[st_ceste - 1].cars[i].isHit(pozicijaY))
+        if (this.roads[st_ceste - 1].cars[i].isClose(pozicijaY) && !end) {
+          sound.carHorn.play();
+          if (this.roads[st_ceste - 1].cars[i].isHit(pozicijaY)) {
+            sound.carHorn.play();
+            sound.hitByCar.play();
+            this.end = true;
+          }
           // če ga avto zadane (glej razred car -> isHit)
           // kaj narediti ko umreš:
           // console.log("dead");
-          this.end = true;
+        }
       }
     }
     cx = (pozicijaX + 1) * 2;

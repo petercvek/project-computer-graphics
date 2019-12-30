@@ -11,8 +11,8 @@ export default class Cars {
     let directions = [-1, 1];
     this.direction = directions[Math.floor(Math.random() * 2)];
 
-    this.speed = Math.floor(Math.random() * 7 + 3);
-    this.waitTime = Math.floor(Math.random() * 3000 + 2000);
+    this.speed = Math.floor(Math.random() * 7 + 4);
+    this.waitTime = Math.floor(Math.random() * 2800 + 1500);
 
     // takoj enga das v sceno
     let car = new Car(this.direction, this.speed, xPosition);

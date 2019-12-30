@@ -1,5 +1,6 @@
 export default class Trees {
   constructor() {
+    this.coins = 0;
     this.map = Array.from({ length: 1 }, () => []);
     this.map[0] = [1, 1, 1, 1, 1, 1, 1, 1, 1];
     this.map[1] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -11,6 +12,9 @@ export default class Trees {
     if (this.isTreeLine(this.map[len - 2])) {
       // če je pred prejšnja napolnjena z drevesi doda eno prazno
       this.map[len] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+      if (this.map.length > 4 && Math.floor(Math.random() * 4) === 3)
+        // 1/4 možnosti za coin
+        this.map[len] = this.shuffle([2, 0, 0, 0, 0, 0, 0, 0, 0]);
     } else {
       let n_trees = Math.floor(Math.random() * 4) + 2; // število dreves naključno med 2-5
       let next = Array.from(Array(9), () => 0); // napolni z ničlami
@@ -52,5 +56,16 @@ export default class Trees {
   isTreeLine(array) {
     for (let i = 0; i < array.length; i++) if (array[i] === 1) return true;
     return false;
+  }
+
+  isCoin(posX, posY) {
+    posX = (posX + 1) * 2; // iz kordinat ki grejo od -0.5 do inf. v indekse 0 do inf.
+    posY = (posY + 0.5) * 2; // iz kordinat ki grejo od -0.5 do 3.5 v indekse 0 do 8
+    console.log(posX, posY);
+    if (this.map[posX][posY] === 2) {
+      this.coins++;
+      this.map[posX][posY] = 0; // zbrišemo coin iz seznama
+      return true;
+    }
   }
 }
