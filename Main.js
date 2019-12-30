@@ -233,19 +233,6 @@ class App extends Application {
       this.roads = [];
 
       for (let i = 0; i < trees.map.length; i++) {
-        for (let j = 0; j < trees.map[i].length; j++) {
-          let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
-          if (trees.map[i][j] == 1) {
-            let gltf = deepCopy(this.enviromentObjects[randomNumber]);
-            gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
-
-            let t = gltf.scenes[0].nodes[0].transform;
-            mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
-            mat4.rotateX(t, t, 1.570796);
-
-            this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
-          }
-        }
         if (!trees.isTreeLine(trees.map[i])) {
           // če ni dreves v tisti liniji naredi tam cesto
           let gltf = deepCopy(this.roadGltf);
@@ -263,6 +250,20 @@ class App extends Application {
           mat4.fromTranslation(t, [3, 0, -i - 2]);
           mat4.rotateX(t, t, 1.570796);
           this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]); // doda v sceno
+
+          for (let j = 0; j < trees.map[i].length; j++) {
+            let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
+            if (trees.map[i][j] == 1) {
+              let gltf = deepCopy(this.enviromentObjects[randomNumber]);
+              gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
+
+              let t = gltf.scenes[0].nodes[0].transform;
+              mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
+              mat4.rotateX(t, t, 1.570796);
+
+              this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+            }
+          }
         }
       }
 
@@ -275,7 +276,7 @@ class App extends Application {
       let carMesh = this.carGltf.scenes[0].nodes[0].mesh;
       this.car = this.carGltf;
 
-      for (let k = 0; k < 200; k++) {
+      for (let k = 0; k < 50; k++) {
         let gltf = deepCopy(this.carGltf);
         gltf.scenes[0].nodes[0].mesh = carMesh;
         let t = gltf.scenes[0].nodes[0].transform;
@@ -294,17 +295,6 @@ class App extends Application {
   update() {
     const izrisiNoveVrstice = async () => {
       for (let i = this.izrisanihVrstic; i < trees.map.length; i++) {
-        for (let j = 0; j < trees.map[i].length; j++) {
-          let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
-          if (trees.map[i][j] == 1) {
-            let gltf = deepCopy(this.enviromentObjects[randomNumber]);
-            gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
-            let t = gltf.scenes[0].nodes[0].transform;
-            mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
-            mat4.rotateX(t, t, 1.570796);
-            this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
-          }
-        }
         if (!trees.isTreeLine(trees.map[i])) {
           // če ni dreves v tisti liniji naredi tam cesto
           let gltf = deepCopy(this.roadGltf);
@@ -316,12 +306,25 @@ class App extends Application {
           let road = new Cars(i);
           this.roads.push(road);
         } else {
-          let gltf = deepCopy(this.grassGltf);
-          gltf.scenes[0].nodes[0].mesh = this.grassMesh;
-          let t = gltf.scenes[0].nodes[0].transform;
+          let gltf = deepCopy(this.grassGltf); // naredi kopijo
+          gltf.scenes[0].nodes[0].mesh = this.grassMesh; // doda mu mesh ker se pri kopiranju nekaj unici
+          let t = gltf.scenes[0].nodes[0].transform; // nastima pozicijo
           mat4.fromTranslation(t, [3, 0, -i - 2]);
           mat4.rotateX(t, t, 1.570796);
-          this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+          this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]); // doda v sceno
+          for (let j = 0; j < trees.map[i].length; j++) {
+            let randomNumber = Math.floor(Math.random() * this.enviromentObjects.length);
+            if (trees.map[i][j] == 1) {
+              let gltf = deepCopy(this.enviromentObjects[randomNumber]);
+              gltf.scenes[0].nodes[0].mesh = this.enviromentObjectsMesh[randomNumber];
+
+              let t = gltf.scenes[0].nodes[0].transform;
+              mat4.fromTranslation(t, [j - 1, 0.4, -i + 2]);
+              mat4.rotateX(t, t, 1.570796);
+
+              this.vseSceneVIgri.push(gltf.scenes[0].nodes[0]);
+            }
+          }
         }
 
         this.izrisanihVrstic++;
@@ -349,24 +352,28 @@ class App extends Application {
 
       if (this.car) {
         let counter = 0;
-        // console.log(this.roads);
         for (let vrstica = 0; vrstica < this.roads.length; vrstica++) {
           for (let avto = 0; avto < this.roads[vrstica].cars.length; avto++) {
-            let enAvto = this.avti[counter];
-            let matrika = enAvto.scenes[0].nodes[0].transform;
-            if (this.roads[vrstica].cars[avto].xPosition * 0.5 - pozicijaX < -5) {
-              this.roads[vrstica].deleteRow();
+            if (counter >= 49) {
               break;
             }
-            mat4.fromTranslation(matrika, [this.roads[vrstica].cars[avto].yPosition, 0.4, -this.roads[vrstica].cars[avto].xPosition - 2]);
-            mat4.rotateX(matrika, matrika, 1.570796);
-            if (this.roads[vrstica].direction == 1) {
-              // zavrti v tisto smer k je obrnjen
-              mat4.rotateZ(matrika, matrika, 4.712388);
+            let enAvto = this.avti[counter];
+            let matrika = enAvto.scenes[0].nodes[0].transform;
+            if (this.roads[vrstica].cars[avto].xPosition * 0.5 - pozicijaX < -7) {
+              this.roads[vrstica].deleteRow();
+              vrstica++;
+              continue;
             } else {
-              mat4.rotateZ(matrika, matrika, 1.570796);
+              mat4.fromTranslation(matrika, [this.roads[vrstica].cars[avto].yPosition, 0.4, -this.roads[vrstica].cars[avto].xPosition - 2]);
+              mat4.rotateX(matrika, matrika, 1.570796);
+              if (this.roads[vrstica].direction == 1) {
+                // zavrti v tisto smer k je obrnjen
+                mat4.rotateZ(matrika, matrika, 4.712388);
+              } else {
+                mat4.rotateZ(matrika, matrika, 1.570796);
+              }
+              counter++;
             }
-            counter++;
           }
         }
       }
