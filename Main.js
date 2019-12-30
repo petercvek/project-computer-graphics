@@ -16,6 +16,7 @@ let pozicijaY = 1.5; // max 10, 5 sredina
 let pozicijaZ = 0;
 let premikam = false;
 let smerFigure = 3.14159265;
+let score = 0;
 let st_ceste = 0; // 1-inf. - stevilka ceste (služi tudi kot score) kjer se karakter trenutno nahaja (začne se z 1)
 let cx = 2; // index kjer je karakter (namesto da gre u minus in po +0.5 gre od 0 do inf. u korakih +1)
 
@@ -80,9 +81,6 @@ function samoSkoci() {
 }
 
 function premik(smer, usmerjenost) {
-  // var time = 0;
-  // var interval = setInterval(function() {
-  // if (time < 50) {
   if (smer === "x") {
     const trenutna = pozicijaX;
     let koncna;
@@ -93,9 +91,17 @@ function premik(smer, usmerjenost) {
       // Nazaj - S
       koncna = pozicijaX - 0.5;
     }
-    new Between(trenutna, koncna).time(200).on("update", value => {
-      pozicijaX = value;
-    });
+    new Between(trenutna, koncna)
+      .time(200)
+      .on("update", value => {
+        pozicijaX = value;
+      })
+      .on("complete", value => {
+        if (score < value * 2) {
+          score = value * 2;
+          document.getElementById("score").innerHTML = score;
+        }
+      });
   } else {
     const trenutna = pozicijaY;
     let koncna;
@@ -108,6 +114,7 @@ function premik(smer, usmerjenost) {
       pozicijaY = value;
     });
   }
+  // skok v zrak
   new Between(pozicijaZ, pozicijaZ + 0.3)
     .time(100)
     .loop("bounce", 2)
@@ -117,17 +124,6 @@ function premik(smer, usmerjenost) {
     .on("complete", () => {
       premikam = false;
     });
-  // if (time > 24) {
-  //   pozicijaZ = round(pozicijaZ - 0.02, 3);
-  // } else {
-  //   pozicijaZ = round(pozicijaZ + 0.02, 3);
-  // }
-  // time++;
-  // } else {
-  // clearInterval(interval);
-
-  // }
-  // }, 2);
 }
 
 const keydownHandler = e => {
