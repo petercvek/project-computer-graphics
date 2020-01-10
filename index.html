@@ -1,22 +1,32 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="./common/style2.css">
     <title>Game</title>
-
-    <link rel="stylesheet" type="text/css" href="./common/style.css">
-    <script type="text/javascript" src="./lib/gl-matrix-min.js"></script>
-    <script type="text/javascript" src="./lib/dat.gui.min.js"></script>
-    <script type="text/javascript" src="./lib/between.js"></script>
-    <script type="module" src="main.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 </head>
-
 <body>
-    <p class="score" id="score">0</p>
-    <div class="fullscreen">
-
-        <canvas></canvas>
+    <div id="bckg"></div>
+    <div class="center">
+        <div id="title">
+            <h1>Rush hour pedestrian</h1>
+        </div>
+        <div id="ready">
+            <input id="start" type="button" value="Ready" onclick="window.location.href = './game.html' + '?character=' + active"/>
+        </div>
+        <div id="chooseTitle">
+            <h2>Choose your<br>character:</h2>
+        </div>
+        <div id="characters">
+            <div id="leftCharacter">
+                <div id="leftImg" class="charImg" onclick="active = activeCharacter(1)"></div>
+            </div>
+            <div id="rightCharacter">
+                <div id="rightImg" class="charImg" onclick="active = activeCharacter(2)"></div>
+            </div>
+        </div>
     </div>
 </body>
-
+<script src="./frontpage.js" type="text/javascript"></script>
 </html>

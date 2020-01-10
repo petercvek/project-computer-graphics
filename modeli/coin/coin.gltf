@@ -15,31 +15,24 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "bitcoin",
+            "name" : "log_1",
             "rotation" : [
+                0.7071068286895752,
                 0,
                 0,
-                -0.7071067690849304,
-                0.7071067690849304
-            ],
-            "scale" : [
-                0.800000011920929,
-                1,
-                0.800000011920929
+                0.7071067094802856
             ]
         }
     ],
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "Material.002",
+            "name" : "log_1-tex.tex",
             "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.800000011920929,
-                    0.43700000643730164,
-                    0.09799999743700027,
-                    1
-                ],
+                "baseColorTexture" : {
+                    "index" : 0,
+                    "texCoord" : 0
+                },
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.5
             }
@@ -47,69 +40,93 @@
     ],
     "meshes" : [
         {
-            "name" : "coin",
+            "name" : "log_1",
             "primitives" : [
                 {
                     "attributes" : {
                         "POSITION" : 0,
-                        "NORMAL" : 1
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
                     },
-                    "indices" : 2,
+                    "indices" : 3,
                     "material" : 0
                 }
             ]
+        }
+    ],
+    "textures" : [
+        {
+            "source" : 0
+        }
+    ],
+    "images" : [
+        {
+            "mimeType" : "image/png",
+            "name" : "Screenshot 2020-01-04 at 20.06.13",
+            "uri" : "Screenshot 2020-01-04 at 20_06_13.png"
         }
     ],
     "accessors" : [
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 290,
+            "count" : 88,
             "max" : [
-                0.24675001204013824,
-                0.036222077906131744,
-                0.24674999713897705
+                0.17383188009262085,
+                0.25,
+                0
             ],
             "min" : [
-                -0.24674998223781586,
-                -0.036222077906131744,
-                -0.24674999713897705
+                -0.1777554750442505,
+                -0.25,
+                -0.5
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 290,
+            "count" : 88,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 88,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 576,
+            "count" : 132,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 3480,
+            "byteLength" : 1056,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 3480,
-            "byteOffset" : 3480
+            "byteLength" : 1056,
+            "byteOffset" : 1056
         },
         {
             "buffer" : 0,
-            "byteLength" : 1152,
-            "byteOffset" : 6960
+            "byteLength" : 704,
+            "byteOffset" : 2112
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 264,
+            "byteOffset" : 2816
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 8112,
+            "byteLength" : 3080,
             "uri" : "coin.bin"
         }
     ]

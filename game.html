@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Game</title>
+
+    <link rel="stylesheet" type="text/css" href="./common/style.css">
+    <script type="text/javascript" src="./lib/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="./lib/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./lib/between.js"></script>
+    <script type="module" src="Main.js"></script>
+    <script>
+        function reload() {
+            location.reload();
+        }
+    </script>
+</head>
+<body>
+    <p id="score">0</p>
+    <div class="fullscreen">
+        <canvas></canvas>
+    </div>
+    <div id="endscreen">
+        <div id="scoreDisplay">
+            <h1>
+                You scored:<br>
+                <span id="endScore"></span> points
+            </h1>
+        </div>
+        <div id="endQuote">
+            <div id="rndQuote"></div>
+        </div>
+        <input id="restart" type="button" value="Restart" onclick="reload()"/>
+    </div>
+</body>
+</html>

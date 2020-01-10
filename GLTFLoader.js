@@ -319,7 +319,7 @@ export default class GLTFLoader {
         const canvas = document.querySelector("canvas");
         let w = canvas.clientWidth;
         let h = canvas.clientHeight;
-        const fov = 150;
+        const fov = 200;
         const left = -o.xmag / fov;
         const right = o.xmag / fov;
         const bottom = -o.ymag / fov;

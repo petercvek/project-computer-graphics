@@ -7,7 +7,7 @@ export default class Car {
   }
 
   moveCar(speed, direction) {
-    new Between(-10 * direction, -15 * -direction).time(speed * 1500).on("update", value => {
+    new Between(-18 * direction, -22 * -direction).time(speed * 1500).on("update", value => {
       this.yPosition = value;
     });
   }
@@ -21,7 +21,7 @@ export default class Car {
 
   isClose(yPos) {
     // če je avto blizu možička
-    if (yPos * 2 < this.yPosition + 1.2 && yPos * 2 > this.yPosition - 1.2) {
+    if (yPos * 2 < this.yPosition + 1.5 && yPos * 2 > this.yPosition - 1.5) {
       return true;
       // da auto piska samo če se mu približaš od odspredaj (ne deluje pravilno):
       // if (this.direction < 0 && yPos < this.yPosition) // auti z desne

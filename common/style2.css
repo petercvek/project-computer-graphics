@@ -1,0 +1,158 @@
+@font-face {
+    font-family: "retroGame";
+    src: URL("../lib/retro.ttf") format("truetype");
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#bckg {
+    position: absolute;
+    background: url("../common/images/bckg.jpg");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+h1 {
+    font-size: 60px;
+    font-family: "retroGame";
+    text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+    color: ghostwhite;
+    text-align: center;
+}
+
+h2 {
+    font-size: 35px;
+    font-family: "retroGame";
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    color: ghostwhite;
+    text-align: center;
+}
+
+#title {
+    padding-top: 0;
+}
+
+#ready {
+    width: 550px;
+    height: 100px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#start {
+    position: relative;
+    text-decoration: none;
+    border: 2px solid black;
+    height: 100%;
+    width: 100%;
+    background: mediumseagreen;
+    margin: 0 auto;
+    font-family: "retroGame";
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    display: inline-block;
+    text-align: center;
+    font-size: 25px;
+    padding: 0;
+    text-decoration: none;
+    color: ghostwhite;
+    box-shadow: inset 0 0 10px black;
+    border-radius: 20px;
+    outline: none;
+}
+
+#start:hover {
+    background: seagreen;
+}
+
+#start:active {
+    transform: scale(0.95);
+}
+
+#chooseTitle {
+    padding-bottom: 0px;
+    margin-bottom: -15px;
+}
+
+#leftCharacter {
+    position: relative;
+    display: inline-block;
+    *display: inline;
+    vertical-align: top;
+    height: 235px;
+    width: 150px;
+}
+
+#rightCharacter {
+    position: relative;
+    display: inline-block;
+    *display: inline;
+    vertical-align: top;
+    height: 235px;
+    width: 150px;
+    margin-left: 12px;
+}
+
+#characters {
+    margin: 0 auto;
+    width: 320px;
+}
+
+#button {
+
+}
+
+#rightImg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url("../common/images/1.png") no-repeat;
+    background-size: 100% 100%;
+}
+
+#leftImg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url("../common/images/2.png") no-repeat;
+    background-size: 100% 100%;
+}
+
+#leftImg:focus, #rightImg:focus {
+    box-shadow: inset 0 0 30px black;
+    border-radius: 20px;
+}
+
+.charImg {
+    opacity: 100%;
+}
+
+.charImg:hover{
+    box-shadow: inset 0 0 30px black;
+    border-radius: 20px;
+}
+
+.charImg:active {
+    transform: scale(0.95);
+}
+
+.center {
+    position: absolute;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    margin-top: -350px;
+    vertical-align: middle;
+    margin-left:-400px;
+}
