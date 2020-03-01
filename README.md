@@ -1,6 +1,7 @@
 # School project - Computer graphics
 
 ## Replica of game Crossy Road
+Link to game: https://petercvek.github.io/project-computer-graphics/
 
 Controls: W,A,S,D
 
